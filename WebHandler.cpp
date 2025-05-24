@@ -146,6 +146,7 @@ function connectWebSocket() {
             <a class="settings-icon" href="/schedules" title="Voir les horaires">🗓️</a>
             <a class="settings-icon" href="/config" title="Configuration">⚙️</a>
             <a class="settings-icon" href="/update" title="Mise à jour">🔄</a>
+            <a class="settings-icon" href="/logs" title="Journal de logs">📄</a>
           </div>
         )rawliteral";
       html += HOME_PAGE_FOOTER;
@@ -431,17 +432,14 @@ void WebHandler::setupRoutes() {
       </head>
       <body>
         <h2>Logs système</h2>
-        <div id="log">
-    )rawliteral";
-    while (file.available()) {
-      html += String((char)file.read());
-    }
+        <div id="log">)rawliteral";
+    while (file.available()) {html += String((char)file.read());}
     file.close();
     html += R"rawliteral(
         </div>
           <button onclick="resetLogs()">🧹 Effacer les logs</button>
           <button onclick="reloadLogs()">🔄 Recharger les logs</button>
-          <button onclick="return()">Retour</button>
+          <button onclick="returnHome()">Retour</button>
         <script>
              function returnHome() {
                 window.location.href = "/"; 

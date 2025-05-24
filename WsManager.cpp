@@ -55,16 +55,15 @@ void WsManager::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
         connected++;
       }
     }
-    LogManager::logf("[WS] Nombre actuel de clients connectés : %u\n", connected);
+    LogManager::logf("[WS] Nombre actuel de clients connectés : %u", connected);
 
     if (connected >= 4) {
       LogManager::log("[WS] Trop de clients connectés, connexion refusée.");
-      LogManager::logf("[WS] Nombre actuel de clients connectés : %u\n", connected);
       client->close();
       return;
     }
 
-    LogManager::logf("[WS] Client %u connecté avec succès\n", client->id());
+    LogManager::logf("[WS] Client %u connecté avec succès", client->id());
     notifyAllClientsRelayStates();
     break;
     }
