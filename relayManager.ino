@@ -15,11 +15,11 @@
 #include "TimeManager.h"
 #include "WsManager.h"
 #include "LogManager.h"
+#include <esp_system.h>
 
 RelayScheduler scheduler(RELAY_PINS, RELAY_COUNT);
-// AsyncWebServer server(80);
-RelayNameManager relayManager;
-// WifiManager wifiManager(SSID, PASSWORD,30); 
+
+RelayNameManager relayManager; 
 WifiManager wifiManager(15);  // timeout 15s
 
 MQTTManager mqttManager(MQTT_SERVER_IP);
@@ -37,36 +37,39 @@ bool isAuthenticated(AsyncWebServerRequest *request) {
 
 void setup() {
   Serial.begin(115200);
-  delay(50);
-  Serial.println("Démarrage...");
-  setupRelays();
-  wifiManager.begin();
-  mqttManager.begin();
-  mqttManager.reconnect();
-  relayManager.begin();  
-  webHandler.setupRoutes();
-  delay(50);
-  ElegantOTA.begin(&server);  
+  delay(1000);
 
-  server.begin();
-  Serial.println("Serveur Web démarré");
-
-  TimeManager::setupTime();
-  
+  if (!SPIFFS.exists("/logs.txt")) {
+      Serial.println("⚠️ Fichier /logs.txt inexistant !");
+  }
   SPIFFS.begin(true);
-
-  scheduler.loadSchedules();
-
-  ws.onEvent(WsManager::onWsEvent);
-  server.addHandler(&ws);
-
   LogManager::begin();
   LogManager::log("Système démarré.");
 
-    if (!SPIFFS.exists("/logs.txt")) {
-    Serial.println("⚠️ Fichier /logs.txt inexistant !");
-  }
+  esp_reset_reason_t reason = esp_reset_reason();
+  LogManager::logf("[BOOT] Reset Reason: %d\n", reason);
+  LogManager::logf("[BOOT] Uptime actuel (ms) : %lu\n", millis());
 
+  setupRelays();
+  wifiManager.begin();
+  delay(200);
+  mqttManager.begin();
+  mqttManager.reconnect();
+  delay(100);
+  relayManager.begin();  
+  webHandler.setupRoutes();
+  delay(100);
+  ElegantOTA.begin(&server);  
+  delay(10);
+  server.begin();
+  LogManager::log("Serveur Web démarré");
+  TimeManager::setupTime();
+  delay(100);
+  scheduler.loadSchedules();
+  delay(100);
+  ws.onEvent(WsManager::onWsEvent);
+  server.addHandler(&ws);
+  LogManager::log("Setup done");
 }
 
 
@@ -78,7 +81,7 @@ void loop() {
   ElegantOTA.loop();
 
   static unsigned long lastUpdate = 0;
-  const unsigned long interval = 10000;
+  const unsigned long interval = 20000;
   unsigned long now = millis();
 
   if (now - lastUpdate >= interval) {

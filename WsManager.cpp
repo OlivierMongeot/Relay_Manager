@@ -44,24 +44,25 @@ void WsManager::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
         LogManager::logf("[WS] Tentative de connexion du client %u depuis %s\n",
                     client->id(), client->remoteIP().toString().c_str());
 
-    uint8_t connected = 0;
-    for (auto &c : ws.getClients()) {
-      if (c.status() == WS_CONNECTED) {
-        connected++;
-      }
-    }
-    LogManager::logf("[WS] Nombre actuel de clients connectés : %u", connected);
+        uint8_t connected = 0;
+        for (auto &c : ws.getClients()) {
+          if (c.status() == WS_CONNECTED) {
+            connected++;
+          }
+        }
+        LogManager::logf("[WS] Nombre actuel de clients connectés : %u", connected);
 
-    if (connected >= 4) {
-      LogManager::log("[WS] Trop de clients connectés, connexion refusée.");
-      client->close();
-      return;
-    }
+        if (connected >= 4) {
+          LogManager::log("[WS] Trop de clients connectés, connexion refusée.");
+          client->close();
+          return;
+        }
 
-    LogManager::logf("[WS] Client %u connecté avec succès", client->id());
-    notifyAllClientsRelayStates();
-    break;
-    }
+        LogManager::logf("[WS] Client %u connecté avec succès", client->id());
+        yield();  
+        notifyAllClientsRelayStates();
+        break;
+        }
 
     case WS_EVT_DISCONNECT:
       LogManager::logf("[WS] Client %u déconnecté\n", client->id());
