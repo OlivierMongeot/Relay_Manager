@@ -4,7 +4,6 @@
 #include <AsyncWebSocket.h>
 #include <LogManager.h>
 
-// Déclare le ws en externe (si défini dans un autre fichier)
 extern AsyncWebSocket ws;
 
 void WsManager::notifyAllClientsRelayStates() {
@@ -29,17 +28,13 @@ void WsManager::notifyAllClientsRelayStates() {
   // Sécurité : ne pas envoyer si aucun client ou JSON mal formé
   if (ws.count() > 0 && offset < BUFFER_SIZE) {
     ws.textAll(json);
-    // Serial.println("[WS] États des relais envoyés à tous les clients.");
     LogManager::log("[WS] États des relais envoyés à tous les clients.");
    
   } else {
-    // Serial.println("[WS] Aucun client ou erreur JSON, rien envoyé.");
     LogManager::log("[WS] Aucun client ou erreur JSON, rien envoyé.");
   }
 
-  // Serial.print("Free Heap après WebSocket : ");
-  // Serial.println(ESP.getFreeHeap());
-  LogManager::log(String("FreeHeap after WS Notiftcation all clients : ") + String(ESP.getFreeHeap()));
+  LogManager::log(String("FreeHeap after WS Notiftcation à tus les clients : ") + String(ESP.getFreeHeap()));
 }
 
 void WsManager::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,

@@ -1,12 +1,11 @@
 #include "LogManager.h"
 #include <FS.h>
 #include <SPIFFS.h>
-#include <time.h>  // Si tu veux ajouter un horodatage (optionnel)
+#include <time.h>  
 #include <stdarg.h>
-// #include "mqtt_manager.h"
 
 #define LOG_FILE_PATH "/logs.txt"
-#define MAX_LOG_SIZE 8192  // Limite pour éviter de saturer
+#define MAX_LOG_SIZE 8192 
 
 void LogManager::begin() {
     if (!SPIFFS.begin(true)) {
@@ -23,7 +22,6 @@ void LogManager::log(const String& message) {
         return;
     }
 
-    // Horodatage simple (si tu as configuré NTP sinon commentaire)
     time_t now = time(nullptr);
     String timestamp = now > 0 ? String(ctime(&now)) : "[NO TIME]";
     timestamp.trim();
@@ -36,16 +34,12 @@ void LogManager::log(const String& message) {
 }
 
 
-// void LogManager::clear() {
-//     SPIFFS.remove(LOG_FILE_PATH);
-// }
-
 void LogManager::logf(const char* fmt, ...) {
-  char buffer[128]; // Ajuste si nécessaire
-  va_list args;
-  va_start(args, fmt);
-  vsnprintf(buffer, sizeof(buffer), fmt, args);
-  va_end(args);
+    char buffer[128]; 
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
 
-  log(String(buffer)); // Appelle ta méthode log(String)
+    log(String(buffer)); 
 }

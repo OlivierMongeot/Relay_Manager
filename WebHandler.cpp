@@ -27,7 +27,6 @@ bool WebHandler::isAuthenticated(AsyncWebServerRequest *request) {
 
 void WebHandler::handleRoot(AsyncWebServerRequest *request) {
   if (!isAuthenticated(request)) return;
-  Serial.println('WebHandler::handleRoot loaded');
 
   String html = HOME_PAGE_HEADER;
 
@@ -70,29 +69,29 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
         });
       });
 
-   
-let ws;
-let reconnectTimeout = null;
-let isManuallyClosed = false;
+      
+    let ws;
+    let reconnectTimeout = null;
+    let isManuallyClosed = false;
 
-function connectWebSocket() {
-  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-    console.log("WebSocket déjà connecté ou en cours de connexion.");
-    return; // Évite les connexions multiples
-  }
+    function connectWebSocket() {
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        console.log("WebSocket déjà connecté ou en cours de connexion.");
+        return; // Évite les connexions multiples
+      }
 
-  const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
-  const wsUrl = wsProtocol + window.location.host + '/ws';
+      const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+      const wsUrl = wsProtocol + window.location.host + '/ws';
 
-  ws = new WebSocket(wsUrl);
+      ws = new WebSocket(wsUrl);
 
-  ws.onopen = () => {
-    console.log("✅ WebSocket connecté");
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout);
-      reconnectTimeout = null;
-    }
-  };
+      ws.onopen = () => {
+        console.log("✅ WebSocket connecté");
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout);
+          reconnectTimeout = null;
+        }
+      };
 
   ws.onmessage = (event) => {
     try {
@@ -112,6 +111,7 @@ function connectWebSocket() {
 
   ws.onclose = (event) => {
     console.warn("❌ WebSocket fermé :", event.reason || "aucune raison");
+    console.log(event)
     // if (!isManuallyClosed) {
     //   reconnectTimeout = setTimeout(() => {
     //     console.log("🔄 Tentative de reconnexion WebSocket...");
@@ -123,15 +123,14 @@ function connectWebSocket() {
   ws.onerror = (error) => {
     console.error("🚨 WebSocket erreur :", error);
     ws.close(); // ferme pour déclencher `onclose`
-  };
-}
+    };
+  }
 
     // Pour fermer manuellement si besoin
     function closeWebSocket() {
       isManuallyClosed = true;
       if (ws) ws.close();
     }
-
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -422,7 +421,7 @@ void WebHandler::setupRoutes() {
       <!DOCTYPE html>
       <html lang="fr">
       <head>
-        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
         <title>Logs système</title>
         <style>
           body { background: #111; color: #0f0; font-family: monospace; margin: 0; padding: 1em; }
