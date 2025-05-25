@@ -17,9 +17,11 @@
 #include "LogManager.h"
 
 RelayScheduler scheduler(RELAY_PINS, RELAY_COUNT);
-AsyncWebServer server(80);
+// AsyncWebServer server(80);
 RelayNameManager relayManager;
-WifiManager wifiManager(SSID, PASSWORD,30); 
+// WifiManager wifiManager(SSID, PASSWORD,30); 
+WifiManager wifiManager(15);  // timeout 15s
+
 MQTTManager mqttManager(MQTT_SERVER_IP);
 WebHandler webHandler(server, scheduler, relayManager, RELAY_PINS, RELAY_COUNT); 
 
