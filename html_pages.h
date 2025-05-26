@@ -35,15 +35,19 @@ const char CONFIG_FORM_FOOTER[] PROGMEM = R"rawliteral(
   </form>
   <a href="/">Retour</a>
 
- 
-
   <div id="message" style="margin-top:15px; color:lightgreen;"></div>
 
+  <button onclick="loadLogs()">Afficher les logs</button>
+  <button onclick="clearLogs()">Effacer les logs</button>
+  <pre id="logs" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></pre>
+
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-
-
-    function loadLogs() {
+  function clearLogs() {
+    fetch('/clear-logs')
+      .then(() => document.getElementById('logs').textContent = '')
+      .catch(() => alert("Erreur lors de l'effacement"));
+  }
+  function loadLogs() {
       fetch('/get-logs')
         .then(response => response.text())
         .then(data => {
@@ -52,7 +56,9 @@ const char CONFIG_FORM_FOOTER[] PROGMEM = R"rawliteral(
         .catch(err => {
           document.getElementById('logs').textContent = 'Erreur lors du chargement des logs.';
         });
-    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
 
     const form = document.getElementById('configForm');
     if (!form) {
@@ -89,11 +95,7 @@ const char CONFIG_FORM_FOOTER[] PROGMEM = R"rawliteral(
   });
    
   </script>
-    <button onclick="loadLogs()">Afficher les logs</button>
-    <pre id="logs" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></pre>
-</body>
-</html>
-)rawliteral";
+</body></html>)rawliteral";
 
 const char HOME_PAGE_HEADER[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -105,8 +107,7 @@ const char HOME_PAGE_HEADER[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <h1>Contrôle des relais</h1>
-  <div class='grid'>
-)rawliteral";
+  <div class='grid'>)rawliteral";
 
 const char HOME_PAGE_FOOTER[] PROGMEM = R"rawliteral(
  
@@ -160,9 +161,7 @@ const char HOME_PAGE_FOOTER[] PROGMEM = R"rawliteral(
 
 </script>
 <div id="toast" class="toast">Message de notification</div>
-</body>
-</html>
-)rawliteral";
+</body></html>)rawliteral";
 
 
 #endif

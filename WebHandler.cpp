@@ -5,6 +5,7 @@
 #include <set>  
 // #include "WsManager.h"
 #include "LogManager.h"
+// #include "globals.h"
 
 extern const char* HTTP_USERNAME;
 extern const char* HTTP_PASSWORD;
@@ -69,76 +70,85 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
         });
       });
 
-      
-  //   let ws;
-  //   let reconnectTimeout = null;
-  //   let isManuallyClosed = false;
+      //  const websocketEnabled = {{WEBSOCKET_ENABLED}};
+      //  if (websocketEnabled) {
 
-  //   function connectWebSocket() {
-  //     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-  //       console.log("WebSocket déjà connecté ou en cours de connexion.");
-  //       return; // Évite les connexions multiples
-  //     }
+      //     let ws;
+      //     let reconnectTimeout = null;
+      //     let isManuallyClosed = false;
 
-  //     const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
-  //     const wsUrl = wsProtocol + window.location.host + '/ws';
+      //     function connectWebSocket() {
+      //       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+      //         console.log("WebSocket déjà connecté ou en cours de connexion.");
+      //         return; // Évite les connexions multiples
+      //       }
 
-  //     ws = new WebSocket(wsUrl);
+      //     const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+      //     const wsUrl = wsProtocol + window.location.host + '/ws';
 
-  //     ws.onopen = () => {
-  //       console.log("✅ WebSocket connecté");
-  //       if (reconnectTimeout) {
-  //         clearTimeout(reconnectTimeout);
-  //         reconnectTimeout = null;
-  //       }
-  //     };
+      //     ws = new WebSocket(wsUrl);
 
-  // ws.onmessage = (event) => {
-  //   try {
-  //     const data = JSON.parse(event.data);
-  //     if (data.relays) {
-  //       data.relays.forEach(relay => {
-  //         const toggle = document.querySelector(`.relay-toggle[data-relay="${relay.id}"]`);
-  //         if (toggle) toggle.checked = relay.state;
-  //       });
-  //     } else if (data.info) {
-  //       showToast(data.info);
-  //     }
-  //   } catch (e) {
-  //     console.warn("Erreur parsing WebSocket :", e);
-  //   }
-  // };
+      //     ws.onopen = () => {
+      //       console.log("✅ WebSocket connecté");
+      //       if (reconnectTimeout) {
+      //         clearTimeout(reconnectTimeout);
+      //         reconnectTimeout = null;
+      //       }
+      //     };
 
-  // ws.onclose = (event) => {
-  //   console.warn("❌ WebSocket fermé :", event.reason || "aucune raison");
-  //   console.log(event)
-  //   // if (!isManuallyClosed) {
-  //   //   reconnectTimeout = setTimeout(() => {
-  //   //     console.log("🔄 Tentative de reconnexion WebSocket...");
-  //   //     connectWebSocket();
-  //   //   }, 60000); // backoff de 60s
-  //   // }
-  // };
+      //     ws.onmessage = (event) => {
+      //       try {
+      //         const data = JSON.parse(event.data);
+      //         if (data.relays) {
+      //           data.relays.forEach(relay => {
+      //             const toggle = document.querySelector(`.relay-toggle[data-relay="${relay.id}"]`);
+      //             if (toggle) toggle.checked = relay.state;
+      //           });
+      //         } else if (data.info) {
+      //           showToast(data.info);
+      //         }
+      //       } catch (e) {
+      //         console.warn("Erreur parsing WebSocket :", e);
+      //       }
+      //     };
 
-  // ws.onerror = (error) => {
-  //   console.error("🚨 WebSocket erreur :", error);
-  //   ws.close(); // ferme pour déclencher `onclose`
-  //   };
-  // }
+      //     ws.onclose = (event) => {
+      //       console.warn("❌ WebSocket fermé :", event.reason || "aucune raison");
+      //       console.log(event)
+      //       // if (!isManuallyClosed) {
+      //       //   reconnectTimeout = setTimeout(() => {
+      //       //     console.log("🔄 Tentative de reconnexion WebSocket...");
+      //       //     connectWebSocket();
+      //       //   }, 60000); // backoff de 60s
+      //       // }
+      //     };
 
-  //   // Pour fermer manuellement si besoin
-  //   function closeWebSocket() {
-  //     isManuallyClosed = true;
-  //     if (ws) ws.close();
-  //   }
+      //     ws.onerror = (error) => {
+      //       console.error("🚨 WebSocket erreur :", error);
+      //       ws.close(); // ferme pour déclencher `onclose`
+      //       };
+      //     }
+
+      //     // Pour fermer manuellement si besoin
+      //     function closeWebSocket() {
+      //       isManuallyClosed = true;
+      //       if (ws) ws.close();
+      //     }
 
 
-  //   document.addEventListener('DOMContentLoaded', () => {
-  //       connectWebSocket();
-  //   });
+      //     document.addEventListener('DOMContentLoaded', () => {
+      //         connectWebSocket();
+      //     });
+        
+       
+      //  } else {
+      //       console.log("WebSocket désactivé.");
+      //  }
+  
 
       </script>
       )rawliteral";
+
       html += R"rawliteral(
           <div>
           <div class="bottom-buttons">
@@ -147,6 +157,7 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
             <a class="settings-icon" href="/update" title="Mise à jour">🔄</a>
           </div>
         )rawliteral";
+      html.replace("{{WEBSOCKET_ENABLED}}", websocketEnabled ? "true" : "false");
       html += HOME_PAGE_FOOTER;
   request->send(200, "text/html; charset=utf-8", html);
 }
@@ -398,31 +409,29 @@ void WebHandler::setupRoutes() {
   });
 
   _server.on("/get-logs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String content;
-    File file = SPIFFS.open("/logs.txt", "r");
-    if (!file || file.isDirectory()) {
-      request->send(500, "text/plain", "Impossible de lire les logs.");
-      return;
-    }
+      request->send(200, "text/plain", LogManager::getLogs());
+    });
 
-    while (file.available()) {
-      content += (char)file.read();
-    }
-    file.close();
-    request->send(200, "text/plain", content);
-  });
+  _server.on("/clear-logs", HTTP_GET, [](AsyncWebServerRequest *request) {
+      LogManager::clearLogs();
+      request->send(200, "text/plain", "Logs effacés.");
+    });
   
   _server.on("/relay-status", HTTP_GET, std::bind(&WebHandler::handleRelayStatus, this, std::placeholders::_1));
 
   for (int i = 1; i <= _relayCount; i++) {
       _server.on(("/ON" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], LOW);
-      // WsManager::notifyAllClientsRelayStates();
+      // if (websocketEnabled) {
+      //       WsManager::notifyAllClientsRelayStates();
+      //     }
       request->send(200, "application/json", "{\"status\":\"OK\"}");
         });
       _server.on(("/OFF" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], HIGH);
-    //  WsManager::notifyAllClientsRelayStates();
+      // if (websocketEnabled) {
+      //       WsManager::notifyAllClientsRelayStates();
+      //     }
       request->send(200, "application/json", "{\"status\":\"OK\"}");
          });
   } 

@@ -1,19 +1,17 @@
 #ifndef LOG_MANAGER_H
 #define LOG_MANAGER_H
 
-#include "mqtt_manager.h"
+#include <Arduino.h>
 
 class LogManager {
-public:
-    static void log(const String& msg);
+  public:
+    static void log(const String &message);
     static void logf(const char* format, ...);
-    static String getLogs(); // Pour affichage via Web
+    static String getLogs();     // ✅ Pour exposer les logs via HTTP
+    static void clearLogs();     // ✅ Pour les effacer si besoin
 
-private:
-    static void addToBuffer(const String& msg);
-    static constexpr size_t MAX_LOGS = 50;
-    static String logBuffer[MAX_LOGS];
-    static size_t logIndex;
+  private:
+    static String _buffer;       // ✅ Stocke les logs en RAM
 };
 
 #endif
