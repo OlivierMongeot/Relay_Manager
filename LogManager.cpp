@@ -1,45 +1,38 @@
 #include "LogManager.h"
-#include <FS.h>
-#include <SPIFFS.h>
-#include <time.h>  
-#include <stdarg.h>
 
-#define LOG_FILE_PATH "/logs.txt"
-#define MAX_LOG_SIZE 8192 
+String LogManager::logBuffer[LogManager::MAX_LOGS];
+size_t LogManager::logIndex = 0;
 
-void LogManager::begin() {
-    if (!SPIFFS.begin(true)) {
-        Serial.println("Erreur lors du montage SPIFFS");
-    } else {
-        Serial.println("SPIFFS monté avec succès");
+void LogManager::log(const String& msg) {
+    Serial.println(msg);
+    addToBuffer(msg);
+
+    if (MQTTManager::instance && MQTTManager::instance->connected()) {
+        MQTTManager::instance->publish("maison/system/logs", msg.c_str());
     }
 }
 
-void LogManager::log(const String& message) {
-    File file = SPIFFS.open(LOG_FILE_PATH, FILE_APPEND);
-    if (!file) {
-        Serial.println("Erreur d'ouverture du fichier log");
-        return;
-    }
-
-    time_t now = time(nullptr);
-    String timestamp = now > 0 ? String(ctime(&now)) : "[NO TIME]";
-    timestamp.trim();
-
-    file.println("[" + timestamp + "] " + message);
-    file.close();
-    Serial.println("[LogManager] " + message);
-
-   
-}
-
-
-void LogManager::logf(const char* fmt, ...) {
-    char buffer[128]; 
+void LogManager::logf(const char* format, ...) {
+    char buffer[256];
     va_list args;
-    va_start(args, fmt);
-    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
+    log(String(buffer));
+}
 
-    log(String(buffer)); 
+void LogManager::addToBuffer(const String& msg) {
+    logBuffer[logIndex] = msg;
+    logIndex = (logIndex + 1) % MAX_LOGS;
+}
+
+String LogManager::getLogs() {
+    String result;
+    for (size_t i = 0; i < MAX_LOGS; ++i) {
+        size_t idx = (logIndex + i) % MAX_LOGS;
+        if (logBuffer[idx].length() > 0) {
+            result += logBuffer[idx] + "\n";
+        }
+    }
+    return result;
 }

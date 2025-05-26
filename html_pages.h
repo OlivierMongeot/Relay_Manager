@@ -34,10 +34,26 @@ const char CONFIG_FORM_FOOTER[] PROGMEM = R"rawliteral(
   <input type="submit" value="Sauvegarder">
   </form>
   <a href="/">Retour</a>
+
+ 
+
   <div id="message" style="margin-top:15px; color:lightgreen;"></div>
 
   <script>
   document.addEventListener('DOMContentLoaded', function() {
+
+
+    function loadLogs() {
+      fetch('/get-logs')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('logs').textContent = data;
+        })
+        .catch(err => {
+          document.getElementById('logs').textContent = 'Erreur lors du chargement des logs.';
+        });
+    }
+
     const form = document.getElementById('configForm');
     if (!form) {
       console.error("Formulaire introuvable !");
@@ -73,6 +89,8 @@ const char CONFIG_FORM_FOOTER[] PROGMEM = R"rawliteral(
   });
    
   </script>
+    <button onclick="loadLogs()">Afficher les logs</button>
+    <pre id="logs" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></pre>
 </body>
 </html>
 )rawliteral";

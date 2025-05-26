@@ -1,6 +1,6 @@
 #include "RelayScheduler.h"
 #include <time.h>
-#include "WsManager.h"
+// #include "WsManager.h"
 
 RelayScheduler::RelayScheduler(const int* relayPins, int relayCount)
     : _relayPins(relayPins), _relayCount(relayCount) {}
@@ -26,12 +26,12 @@ void RelayScheduler::update() {
             digitalWrite(pin, LOW); // ON
             s.isOn = true;
             Serial.printf("Relais %d ON à %02d:%02d\n", s.relayIndex + 1, hour, minute);
-            WsManager::notifyAllClientsRelayStates();
+            // WsManager::notifyAllClientsRelayStates();
         } else if (hour == s.hourOff && minute == s.minOff && s.isOn) {
             digitalWrite(pin, HIGH); // OFF
             s.isOn = false;
             Serial.printf("Relais %d OFF à %02d:%02d\n", s.relayIndex + 1, hour, minute);
-            WsManager::notifyAllClientsRelayStates();
+            // WsManager::notifyAllClientsRelayStates();
         }
     }
 }

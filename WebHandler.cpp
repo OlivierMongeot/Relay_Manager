@@ -3,7 +3,7 @@
 #include "style.css.h"
 #include <SPIFFS.h>
 #include <set>  
-#include "WsManager.h"
+// #include "WsManager.h"
 #include "LogManager.h"
 
 extern const char* HTTP_USERNAME;
@@ -70,72 +70,72 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
       });
 
       
-    let ws;
-    let reconnectTimeout = null;
-    let isManuallyClosed = false;
+  //   let ws;
+  //   let reconnectTimeout = null;
+  //   let isManuallyClosed = false;
 
-    function connectWebSocket() {
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-        console.log("WebSocket déjà connecté ou en cours de connexion.");
-        return; // Évite les connexions multiples
-      }
+  //   function connectWebSocket() {
+  //     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+  //       console.log("WebSocket déjà connecté ou en cours de connexion.");
+  //       return; // Évite les connexions multiples
+  //     }
 
-      const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
-      const wsUrl = wsProtocol + window.location.host + '/ws';
+  //     const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  //     const wsUrl = wsProtocol + window.location.host + '/ws';
 
-      ws = new WebSocket(wsUrl);
+  //     ws = new WebSocket(wsUrl);
 
-      ws.onopen = () => {
-        console.log("✅ WebSocket connecté");
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout);
-          reconnectTimeout = null;
-        }
-      };
+  //     ws.onopen = () => {
+  //       console.log("✅ WebSocket connecté");
+  //       if (reconnectTimeout) {
+  //         clearTimeout(reconnectTimeout);
+  //         reconnectTimeout = null;
+  //       }
+  //     };
 
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.relays) {
-        data.relays.forEach(relay => {
-          const toggle = document.querySelector(`.relay-toggle[data-relay="${relay.id}"]`);
-          if (toggle) toggle.checked = relay.state;
-        });
-      } else if (data.info) {
-        showToast(data.info);
-      }
-    } catch (e) {
-      console.warn("Erreur parsing WebSocket :", e);
-    }
-  };
+  // ws.onmessage = (event) => {
+  //   try {
+  //     const data = JSON.parse(event.data);
+  //     if (data.relays) {
+  //       data.relays.forEach(relay => {
+  //         const toggle = document.querySelector(`.relay-toggle[data-relay="${relay.id}"]`);
+  //         if (toggle) toggle.checked = relay.state;
+  //       });
+  //     } else if (data.info) {
+  //       showToast(data.info);
+  //     }
+  //   } catch (e) {
+  //     console.warn("Erreur parsing WebSocket :", e);
+  //   }
+  // };
 
-  ws.onclose = (event) => {
-    console.warn("❌ WebSocket fermé :", event.reason || "aucune raison");
-    console.log(event)
-    // if (!isManuallyClosed) {
-    //   reconnectTimeout = setTimeout(() => {
-    //     console.log("🔄 Tentative de reconnexion WebSocket...");
-    //     connectWebSocket();
-    //   }, 60000); // backoff de 60s
-    // }
-  };
+  // ws.onclose = (event) => {
+  //   console.warn("❌ WebSocket fermé :", event.reason || "aucune raison");
+  //   console.log(event)
+  //   // if (!isManuallyClosed) {
+  //   //   reconnectTimeout = setTimeout(() => {
+  //   //     console.log("🔄 Tentative de reconnexion WebSocket...");
+  //   //     connectWebSocket();
+  //   //   }, 60000); // backoff de 60s
+  //   // }
+  // };
 
-  ws.onerror = (error) => {
-    console.error("🚨 WebSocket erreur :", error);
-    ws.close(); // ferme pour déclencher `onclose`
-    };
-  }
+  // ws.onerror = (error) => {
+  //   console.error("🚨 WebSocket erreur :", error);
+  //   ws.close(); // ferme pour déclencher `onclose`
+  //   };
+  // }
 
-    // Pour fermer manuellement si besoin
-    function closeWebSocket() {
-      isManuallyClosed = true;
-      if (ws) ws.close();
-    }
+  //   // Pour fermer manuellement si besoin
+  //   function closeWebSocket() {
+  //     isManuallyClosed = true;
+  //     if (ws) ws.close();
+  //   }
 
 
-    document.addEventListener('DOMContentLoaded', () => {
-        connectWebSocket();
-    });
+  //   document.addEventListener('DOMContentLoaded', () => {
+  //       connectWebSocket();
+  //   });
 
       </script>
       )rawliteral";
@@ -145,7 +145,6 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
             <a class="settings-icon" href="/schedules" title="Voir les horaires">🗓️</a>
             <a class="settings-icon" href="/config" title="Configuration">⚙️</a>
             <a class="settings-icon" href="/update" title="Mise à jour">🔄</a>
-            <a class="settings-icon" href="/logs" title="Journal de logs">📄</a>
           </div>
         )rawliteral";
       html += HOME_PAGE_FOOTER;
@@ -398,103 +397,32 @@ void WebHandler::setupRoutes() {
     handleAddSchedule(request);
   });
 
-  _server.on("/logs/raw", HTTP_GET, [](AsyncWebServerRequest *request){
+  _server.on("/get-logs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String content;
     File file = SPIFFS.open("/logs.txt", "r");
-    if (!file) {
-      request->send(404, "text/plain", "Fichier de log introuvable.");
-      return;
-    }
-    request->send(file, "/logs.txt", "text/plain", false);  
-  });
-
-
-
-  _server.on("/logs", HTTP_GET, [](AsyncWebServerRequest *request) {
-
-    File file = SPIFFS.open("/logs.txt", "r");
-    if (!file) {
-      request->send(404, "text/plain", "Fichier de log introuvable.");
+    if (!file || file.isDirectory()) {
+      request->send(500, "text/plain", "Impossible de lire les logs.");
       return;
     }
 
-    String html = R"rawliteral(
-      <!DOCTYPE html>
-      <html lang="fr">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
-        <title>Logs système</title>
-        <style>
-          body { background: #111; color: #0f0; font-family: monospace; margin: 0; padding: 1em; }
-          #log { white-space: pre-wrap; overflow-y: scroll; height: 40vh; border: 1px solid #333; padding: 1em; background: #000; }
-          button { margin-top: 10px; }
-        </style>
-      </head>
-      <body>
-        <h2>Logs système</h2>
-        <div id="log">)rawliteral";
-    while (file.available()) {html += String((char)file.read());}
+    while (file.available()) {
+      content += (char)file.read();
+    }
     file.close();
-    html += R"rawliteral(
-        </div>
-          <button onclick="resetLogs()">🧹 Effacer les logs</button>
-          <button onclick="reloadLogs()">🔄 Recharger les logs</button>
-          <button onclick="returnHome()">Retour</button>
-        <script>
-             function returnHome() {
-                window.location.href = "/"; 
-              }
-
-              function reloadLogs() {
-             
-                fetch('/logs/raw')
-                  .then(res => res.text())
-                  .then(data => {
-
-                    document.getElementById('log').textContent = data || '[Aucun log]';
-                    document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
-                  })
-                  .catch(err => {
-                    document.getElementById('log').textContent = 'Erreur : ' + err.message;
-                  });
-              }
-
-             function resetLogs() {
-                fetch('/reset-logs', { method: 'POST' })
-                  .then(response => {
-                    if (response.ok) return reloadLogs();
-                  });
-              }
-
-        </script>
-      </body>
-      </html>
-    )rawliteral";
-
-    request->send(200, "text/html", html);
+    request->send(200, "text/plain", content);
   });
   
-
-  _server.on("/reset-logs", HTTP_POST, [](AsyncWebServerRequest *request) {
-    File file = SPIFFS.open("/logs.txt", "w");  // Truncate le fichier
-    if (!file) {
-      request->send(500, "text/plain", "Impossible de réinitialiser les logs.");
-      return;
-    }
-    file.close();
-    request->send(204); 
-  });
-
   _server.on("/relay-status", HTTP_GET, std::bind(&WebHandler::handleRelayStatus, this, std::placeholders::_1));
 
   for (int i = 1; i <= _relayCount; i++) {
       _server.on(("/ON" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], LOW);
-      WsManager::notifyAllClientsRelayStates();
+      // WsManager::notifyAllClientsRelayStates();
       request->send(200, "application/json", "{\"status\":\"OK\"}");
         });
       _server.on(("/OFF" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], HIGH);
-     WsManager::notifyAllClientsRelayStates();
+    //  WsManager::notifyAllClientsRelayStates();
       request->send(200, "application/json", "{\"status\":\"OK\"}");
          });
   } 
