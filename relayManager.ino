@@ -13,9 +13,7 @@
 #include "RelayScheduler.h"
 #include "WebHandler.h" 
 #include "TimeManager.h"
-// #include "WsManager.h"
 #include "LogManager.h"
-// #include "globals.h"
 
 
 RelayScheduler scheduler(RELAY_PINS, RELAY_COUNT);
@@ -25,7 +23,6 @@ WifiManager wifiManager(15);  // timeout 15s
 
 MQTTManager mqttManager(MQTT_SERVER_IP);
 WebHandler webHandler(server, scheduler, relayManager, RELAY_PINS, RELAY_COUNT); 
-
 
 
 bool isAuthenticated(AsyncWebServerRequest *request) {
@@ -60,14 +57,8 @@ void setup() {
   yield();
 
   LogManager::log("Système démarré.");
-  LogManager::logf("Uptime actuel : %lu ms", millis());
 
-//  if (websocketEnabled) {
-//       ws.onEvent(WsManager::onWsEvent);
-//       server.addHandler(&ws); 
-//     }
-//   }
-
+}
 
 void loop() {
 

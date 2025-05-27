@@ -33,7 +33,6 @@ void WifiManager::connectToWiFi(const char* ssid, const char* password) {
   Serial.print("\nConnexion WiFi ");
   Serial.print("\nStatut : ");
   Serial.println(getWifiStatus(status));
-  LogManager::logf("WiFi status : %t ", getWifiStatus(status));
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 

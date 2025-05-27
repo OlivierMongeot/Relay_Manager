@@ -3,9 +3,7 @@
 #include "style.css.h"
 #include <SPIFFS.h>
 #include <set>  
-// #include "WsManager.h"
 #include "LogManager.h"
-// #include "globals.h"
 
 extern const char* HTTP_USERNAME;
 extern const char* HTTP_PASSWORD;
@@ -70,82 +68,6 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
         });
       });
 
-      //  const websocketEnabled = {{WEBSOCKET_ENABLED}};
-      //  if (websocketEnabled) {
-
-      //     let ws;
-      //     let reconnectTimeout = null;
-      //     let isManuallyClosed = false;
-
-      //     function connectWebSocket() {
-      //       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      //         console.log("WebSocket déjà connecté ou en cours de connexion.");
-      //         return; // Évite les connexions multiples
-      //       }
-
-      //     const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
-      //     const wsUrl = wsProtocol + window.location.host + '/ws';
-
-      //     ws = new WebSocket(wsUrl);
-
-      //     ws.onopen = () => {
-      //       console.log("✅ WebSocket connecté");
-      //       if (reconnectTimeout) {
-      //         clearTimeout(reconnectTimeout);
-      //         reconnectTimeout = null;
-      //       }
-      //     };
-
-      //     ws.onmessage = (event) => {
-      //       try {
-      //         const data = JSON.parse(event.data);
-      //         if (data.relays) {
-      //           data.relays.forEach(relay => {
-      //             const toggle = document.querySelector(`.relay-toggle[data-relay="${relay.id}"]`);
-      //             if (toggle) toggle.checked = relay.state;
-      //           });
-      //         } else if (data.info) {
-      //           showToast(data.info);
-      //         }
-      //       } catch (e) {
-      //         console.warn("Erreur parsing WebSocket :", e);
-      //       }
-      //     };
-
-      //     ws.onclose = (event) => {
-      //       console.warn("❌ WebSocket fermé :", event.reason || "aucune raison");
-      //       console.log(event)
-      //       // if (!isManuallyClosed) {
-      //       //   reconnectTimeout = setTimeout(() => {
-      //       //     console.log("🔄 Tentative de reconnexion WebSocket...");
-      //       //     connectWebSocket();
-      //       //   }, 60000); // backoff de 60s
-      //       // }
-      //     };
-
-      //     ws.onerror = (error) => {
-      //       console.error("🚨 WebSocket erreur :", error);
-      //       ws.close(); // ferme pour déclencher `onclose`
-      //       };
-      //     }
-
-      //     // Pour fermer manuellement si besoin
-      //     function closeWebSocket() {
-      //       isManuallyClosed = true;
-      //       if (ws) ws.close();
-      //     }
-
-
-      //     document.addEventListener('DOMContentLoaded', () => {
-      //         connectWebSocket();
-      //     });
-        
-       
-      //  } else {
-      //       console.log("WebSocket désactivé.");
-      //  }
-  
-
       </script>
       )rawliteral";
 
@@ -157,7 +79,6 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
             <a class="settings-icon" href="/update" title="Mise à jour">🔄</a>
           </div>
         )rawliteral";
-      html.replace("{{WEBSOCKET_ENABLED}}", websocketEnabled ? "true" : "false");
       html += HOME_PAGE_FOOTER;
   request->send(200, "text/html; charset=utf-8", html);
 }
