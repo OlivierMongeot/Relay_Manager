@@ -1,6 +1,8 @@
 #include "RelayScheduler.h"
 #include <time.h>
-#include "LogManager.h"
+#include "mqtt_manager.h"
+#include "log_http.h"
+
 
 RelayScheduler::RelayScheduler(const int* relayPins, int relayCount)
     : _relayPins(relayPins), _relayCount(relayCount) {}
@@ -25,15 +27,12 @@ void RelayScheduler::update() {
         if (hour == s.hourOn && minute == s.minOn && !s.isOn) {
             digitalWrite(pin, LOW); // ON
             s.isOn = true;
-            Serial.printf("Relais %d ON à %02d:%02d\n", s.relayIndex + 1, hour, minute);
-            LogManager::logf("Relais %d ON à %02d:%02d\n", s.relayIndex + 1, hour, minute);
+            sendFormattedLog("Scheduler : Relais %d ON", s.relayIndex + 1);
           
         } else if (hour == s.hourOff && minute == s.minOff && s.isOn) {
             digitalWrite(pin, HIGH); // OFF
             s.isOn = false;
-            Serial.printf("Relais %d OFF à %02d:%02d\n", s.relayIndex + 1, hour, minute);
-            LogManager::logf("Relais %d OFF à %02d:%02d\n", s.relayIndex + 1, hour, minute);
-           
+            sendFormattedLog("Scheduler : Relais %d OFF", s.relayIndex + 1);
         }
     }
 }
@@ -67,7 +66,6 @@ void RelayScheduler::saveSchedules() {
         serializeJson(doc, file);
         file.close();
     }
-    LogManager::log("Nouvel horaire enregistré");
 }
 
 void RelayScheduler::loadSchedules() {
@@ -95,4 +93,44 @@ void RelayScheduler::loadSchedules() {
 
     file.close();
 }   
+
+
+void RelayScheduler::syncRelaysWithCurrentTime() {
+
+    sendLogHttp("Sync Relays WithCurrentTime");
+
+    time_t now = time(nullptr);
+    struct tm timeinfo;
+    localtime_r(&now, &timeinfo);
+
+    int hour = timeinfo.tm_hour;
+    int minute = timeinfo.tm_min;
+
+    sendFormattedLog("[SYNC] Il y a %d plannings enregistrés\n", _schedules.size());
+
+    for (auto& s : _schedules) {
+
+        int pin = _relayPins[s.relayIndex];
+
+        bool shouldBeOn = false;
+
+        // Cas général : même jour (heure on < heure off)
+        if ((s.hourOn < s.hourOff) || (s.hourOn == s.hourOff && s.minOn < s.minOff)) {
+        shouldBeOn = (hour > s.hourOn || (hour == s.hourOn && minute >= s.minOn)) &&
+                    (hour < s.hourOff || (hour == s.hourOff && minute < s.minOff));
+        } 
+        // Cas où le OFF est le lendemain (ex: ON 22:00 OFF 06:00)
+        else {
+        shouldBeOn = (hour > s.hourOn || (hour == s.hourOn && minute >= s.minOn)) ||
+                    (hour < s.hourOff || (hour == s.hourOff && minute < s.minOff));
+        }
+
+        digitalWrite(pin, shouldBeOn ? LOW : HIGH);
+        s.isOn = shouldBeOn;
+
+        sendFormattedLog("Relais %d %s à %02d:%02d\n", s.relayIndex + 1, shouldBeOn ? "restauré ON" : "restauré OFF", hour, minute);
+        yield();
+    }
+}
+
 

@@ -25,9 +25,7 @@ private:
     const int* _relayPins;
     int _relayCount;
     String formatTime(int hour, int minute);
-    int calculateDurationMinutes(uint8_t hourOn, uint8_t minOn, uint8_t hourOff, uint8_t minOff);
     bool isAuthenticated(AsyncWebServerRequest *request);
-
     void handleRoot(AsyncWebServerRequest *request);
     void handleConfig(AsyncWebServerRequest *request);
     void handleSave(AsyncWebServerRequest *request);

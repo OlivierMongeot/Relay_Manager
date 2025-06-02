@@ -25,7 +25,6 @@ const char CONFIG_FORM_HEADER[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <h1>Configuration des relais</h1>
-  
   <form id='configForm' class='config-form' action='/save' method='POST'>
 )rawliteral";
 
@@ -34,30 +33,8 @@ const char CONFIG_FORM_FOOTER[] PROGMEM = R"rawliteral(
   <input type="submit" value="Sauvegarder">
   </form>
   <a href="/">Retour</a>
-
   <div id="message" style="margin-top:15px; color:lightgreen;"></div>
-
-  <button onclick="loadLogs()">Afficher les logs</button>
-  <button onclick="clearLogs()">Effacer les logs</button>
-  <pre id="logs" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></pre>
-
   <script>
-  function clearLogs() {
-    fetch('/clear-logs')
-      .then(() => document.getElementById('logs').textContent = '')
-      .catch(() => alert("Erreur lors de l'effacement"));
-  }
-  function loadLogs() {
-      fetch('/get-logs')
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById('logs').textContent = data;
-        })
-        .catch(err => {
-          document.getElementById('logs').textContent = 'Erreur lors du chargement des logs.';
-        });
-  }
-
   document.addEventListener('DOMContentLoaded', function() {
 
     const form = document.getElementById('configForm');
@@ -110,7 +87,6 @@ const char HOME_PAGE_HEADER[] PROGMEM = R"rawliteral(
   <div class='grid'>)rawliteral";
 
 const char HOME_PAGE_FOOTER[] PROGMEM = R"rawliteral(
- 
   <script>
   function showToast(message, isError = false) {
     const toast = document.getElementById("toast");
@@ -121,7 +97,6 @@ const char HOME_PAGE_FOOTER[] PROGMEM = R"rawliteral(
       toast.classList.remove("show");
     }, 3000);
   }
-
   document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('click', (event) => {
       event.preventDefault();
@@ -162,6 +137,5 @@ const char HOME_PAGE_FOOTER[] PROGMEM = R"rawliteral(
 </script>
 <div id="toast" class="toast">Message de notification</div>
 </body></html>)rawliteral";
-
 
 #endif

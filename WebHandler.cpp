@@ -3,7 +3,8 @@
 #include "style.css.h"
 #include <SPIFFS.h>
 #include <set>  
-#include "LogManager.h"
+#include "mqtt_manager.h"
+#include "log_http.h"
 
 extern const char* HTTP_USERNAME;
 extern const char* HTTP_PASSWORD;
@@ -132,13 +133,6 @@ void WebHandler::handleSave(AsyncWebServerRequest *request) {
 }
 
 
-int WebHandler::calculateDurationMinutes(uint8_t hourOn, uint8_t minOn, uint8_t hourOff, uint8_t minOff) {
-  int start = hourOn * 60 + minOn;
-  int end = hourOff * 60 + minOff;
-  int duration = end - start;
-  if (duration < 0) duration += 24 * 60;  // gère le cas où l'heure de fin est après minuit
-  return duration;
-}
 
 String WebHandler::formatTime(int hour, int minute) {
   char buf[6];
@@ -329,32 +323,26 @@ void WebHandler::setupRoutes() {
     handleAddSchedule(request);
   });
 
-  _server.on("/get-logs", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", LogManager::getLogs());
-    });
-
-  _server.on("/clear-logs", HTTP_GET, [](AsyncWebServerRequest *request) {
-      LogManager::clearLogs();
-      request->send(200, "text/plain", "Logs effacés.");
-    });
   
   _server.on("/relay-status", HTTP_GET, std::bind(&WebHandler::handleRelayStatus, this, std::placeholders::_1));
 
   for (int i = 1; i <= _relayCount; i++) {
       _server.on(("/ON" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], LOW);
-      // if (websocketEnabled) {
-      //       WsManager::notifyAllClientsRelayStates();
-      //     }
+      
       request->send(200, "application/json", "{\"status\":\"OK\"}");
-        });
+      delay(50);
+      sendFormattedLog("Click Relais %d ON", i );
+      });
+
       _server.on(("/OFF" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], HIGH);
-      // if (websocketEnabled) {
-      //       WsManager::notifyAllClientsRelayStates();
-      //     }
+      
       request->send(200, "application/json", "{\"status\":\"OK\"}");
-         });
+      delay(50);
+      sendFormattedLog("Click Relais %d OFF ", i );
+
+      });
   } 
 
 }

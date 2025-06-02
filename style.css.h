@@ -29,7 +29,6 @@ h1, h2 {
   margin: auto;
 }
 
-
 .btn-container {
   background: #1f1f1f;
   padding: 15px;
@@ -367,6 +366,7 @@ input{
   background-position: center;
   box-shadow: inset 1px 0 1px rgba(73, 31, 1, 0.25), inset -1px 0 1px rgba(73, 31, 1, 0.25), 0 0 1px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.5);
 }
+
 .toggle-container.d .toggle-input {
   position: absolute;
   z-index: 2;
@@ -418,8 +418,6 @@ input{
   transform: translateX(0) scaleX(1);
   color: #5297ba;
 }
-
-
 
 @media (max-width: 650px) {
   .btn {
@@ -481,6 +479,5 @@ input{
     grid-template-columns: repeat(6, 1fr);
   }
 }
-
 
 )rawliteral";

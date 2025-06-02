@@ -1,5 +1,7 @@
 #include "mqtt_manager.h"
 #include <Arduino.h>
+#include <cstdarg>  // pour va_list
+#include <cstdio>   // pour vsnprintf
 
 // Externe
 extern const int RELAY_PINS[16];
@@ -10,6 +12,10 @@ MQTTManager::MQTTManager(const char* server, uint16_t port)
   : _server(server), _port(port), _client(_espClient) {
   instance = this;
 }
+
+// MQTTManager* MQTTManager::getInstance() {
+//   return instance;
+// }
 
 void MQTTManager::begin() {
   _client.setServer(_server, _port);
@@ -46,6 +52,7 @@ void MQTTManager::handleMessage(const String& topic, const String& message) {
 
   for (int i = 0; i < 16; i++) {
     if (message == "ON" + String(i + 1)) {
+
       digitalWrite(RELAY_PINS[i], LOW);
       return;
     }
@@ -55,6 +62,8 @@ void MQTTManager::handleMessage(const String& topic, const String& message) {
     }
   }
 }
+
+
 
 void MQTTManager::reconnect() {
   while (!_client.connected()) {

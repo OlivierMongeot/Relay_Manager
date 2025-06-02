@@ -13,17 +13,18 @@ public:
   void reconnect();
   bool connected();
   void loop();
+  // static MQTTManager* getInstance();    
   void publish(const char* topic, const char* payload);
   void subscribe(const char* topic);
-  static MQTTManager* instance; // ✅ pour accéder à l’objet dans le callback statique
 
 private:
   const char* _server;
   uint16_t _port;
   WiFiClient _espClient;
   PubSubClient _client;
-  void handleMessage(const String& topic, const String& message);  // ✅ logique encapsulée ici
-  static void mqttCallback(char* topic, byte* payload, unsigned int length); // ✅ appelé par PubSubClient
+  static MQTTManager* instance;                   
+  void handleMessage(const String& topic, const String& message); 
+  static void mqttCallback(char* topic, byte* payload, unsigned int length);
 };
 
 #endif

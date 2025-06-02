@@ -24,6 +24,7 @@ public:
     const std::vector<RelaySchedule>& getSchedules() const;
     void saveSchedules();
     void loadSchedules();
+    void syncRelaysWithCurrentTime();
 
 private:
     const int* _relayPins;

@@ -1,7 +1,7 @@
 #include "wifi_manager.h"
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
-#include "LogManager.h"
+#include "mqtt_manager.h"
 
 
 Preferences preferences;
@@ -51,7 +51,6 @@ void WifiManager::connectToWiFi(const char* ssid, const char* password) {
   Serial.println("\nWiFi connecté !");
   Serial.print("Adresse IP : ");
   Serial.println(WiFi.localIP());
-  LogManager::log("WiFi connecté !");
   WiFi.setAutoReconnect(true);
   WiFi.persistent(true);
 }
@@ -91,7 +90,6 @@ void WifiManager::startConfigPortal() {
   });
 
   server.begin();
-
   // Boucle infinie pour rester en mode config jusqu'à ce que l'ESP redémarre
   while (true) {
     delay(100);

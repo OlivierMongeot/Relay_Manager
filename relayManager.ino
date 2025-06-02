@@ -13,7 +13,7 @@
 #include "RelayScheduler.h"
 #include "WebHandler.h" 
 #include "TimeManager.h"
-#include "LogManager.h"
+#include "log_http.h" 
 
 
 RelayScheduler scheduler(RELAY_PINS, RELAY_COUNT);
@@ -34,43 +34,42 @@ bool isAuthenticated(AsyncWebServerRequest *request) {
 }
 
 void setup() {
-  delay(10);
+  delay(100);
   Serial.begin(115200);
-  delay(1000);
   Serial.println("Démarrage du setup");
-  
   setupRelays();
   wifiManager.begin();
-  yield();
   mqttManager.begin();
   mqttManager.reconnect();
-  yield();
   relayManager.begin();  
   webHandler.setupRoutes();
-  yield();
   ElegantOTA.begin(&server);  
   yield();
   server.begin();
   TimeManager::setupTime();
   yield();
   scheduler.loadSchedules();
+
   yield();
 
-  LogManager::log("Système démarré.");
-
+  sendLogHttp("Système démarré");
+  yield();
+  
+  scheduler.syncRelaysWithCurrentTime();  // ✅ force la cohérence
 }
 
 void loop() {
 
   if (!mqttManager.connected()) mqttManager.reconnect();
-    mqttManager.loop();
-    ElegantOTA.loop();
-    static unsigned long lastUpdate = 0;
-    const unsigned long interval = 20000;
-    unsigned long now = millis();
-    if (now - lastUpdate >= interval) {
+
+  mqttManager.loop();
+  ElegantOTA.loop();
+  
+  static unsigned long lastUpdate = 0;
+  const unsigned long interval = 20000; // 20 secondes 
+  unsigned long now = millis();
+  if (now - lastUpdate >= interval) {
       lastUpdate = now;
       scheduler.update();
     }
-
 }
