@@ -35,7 +35,5 @@ void sendFormattedLog(const char* format, ...) {
     va_start(args, format);
     vsnprintf(logBuffer, sizeof(logBuffer), format, args);
     va_end(args);
-
     sendLogHttp(logBuffer);  // Ta fonction d'envoi HTTP
-    yield();
 }
