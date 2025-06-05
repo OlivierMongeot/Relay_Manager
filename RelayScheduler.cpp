@@ -14,7 +14,20 @@ void RelayScheduler::addRelay(uint8_t relayIndex, uint8_t hourOn, uint8_t minOn,
    saveSchedules();
 }
 
-void RelayScheduler::update() {
+
+void RelayScheduler::processUpdate(){
+
+ static unsigned long lastUpdate = 0;
+  const unsigned long interval = 20000; // 20 secondes 
+  unsigned long now = millis();
+  if (now - lastUpdate >= interval) {
+      lastUpdate = now;
+      updateScheduler();
+    }
+
+}
+
+void RelayScheduler::updateScheduler() {
     time_t now = time(nullptr);
     struct tm timeinfo;
     localtime_r(&now, &timeinfo);
@@ -27,12 +40,12 @@ void RelayScheduler::update() {
         if (hour == s.hourOn && minute == s.minOn && !s.isOn) {
             digitalWrite(pin, LOW); // ON
             s.isOn = true;
-            sendFormattedLog("Scheduler : Relais %d ON", s.relayIndex + 1);
+            // sendFormattedLog("Scheduler : Relais %d ON", s.relayIndex + 1);
           
         } else if (hour == s.hourOff && minute == s.minOff && s.isOn) {
             digitalWrite(pin, HIGH); // OFF
             s.isOn = false;
-            sendFormattedLog("Scheduler : Relais %d OFF", s.relayIndex + 1);
+            // sendFormattedLog("Scheduler : Relais %d OFF", s.relayIndex + 1);
         }
     }
 }
@@ -106,7 +119,7 @@ void RelayScheduler::syncRelaysWithCurrentTime() {
     int hour = timeinfo.tm_hour;
     int minute = timeinfo.tm_min;
 
-    sendFormattedLog("[SYNC] Il y a %d plannings enregistrés\n", _schedules.size());
+    // sendFormattedLog("[SYNC] Il y a %d plannings enregistrés\n", _schedules.size());
 
     for (auto& s : _schedules) {
 
@@ -128,8 +141,8 @@ void RelayScheduler::syncRelaysWithCurrentTime() {
         digitalWrite(pin, shouldBeOn ? LOW : HIGH);
         s.isOn = shouldBeOn;
 
-        sendFormattedLog("Relais %d %s à %02d:%02d\n", s.relayIndex + 1, shouldBeOn ? "restauré ON" : "restauré OFF", hour, minute);
-        yield();
+        // sendFormattedLog("Relais %d %s à %02d:%02d\n", s.relayIndex + 1, shouldBeOn ? "restauré ON" : "restauré OFF", hour, minute);
+    
     }
 }
 

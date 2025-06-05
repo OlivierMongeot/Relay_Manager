@@ -14,7 +14,7 @@ void TimeManager::setupTime() {
         Serial.print(".");
         retry++;
     }
-    delay(500);
+    delay(50);
     Serial.println("\nHeure synchronisée !");
 
     // Affiche heure locale

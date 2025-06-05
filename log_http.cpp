@@ -3,7 +3,26 @@
 #include <HTTPClient.h>
 
 const char* serverName = "http://192.168.0.145/post-esp-data.php";  
-String apiKeyValue = "tPmAT5Ab3j7F9";                                                          
+String apiKeyValue = "tPmAT5Ab3j7F9";                              
+
+std::queue<String> logQueue;
+
+void enqueueLog(const String& message) {
+  if (logQueue.size() < 20) { // limite pour éviter les débordements mémoire
+    logQueue.push(message);
+  } else {
+    Serial.println("⚠️ File de logs pleine, log ignoré.");
+  }
+}
+
+void processLogQueue() {
+  if (WiFi.status() == WL_CONNECTED && !logQueue.empty()) {
+    String msg = logQueue.front();
+    logQueue.pop();
+    sendLogHttp(msg.c_str());
+  }
+}
+
 
 void sendLogHttp(const char* message) {
   if (WiFi.status() == WL_CONNECTED) {
@@ -35,5 +54,6 @@ void sendFormattedLog(const char* format, ...) {
     va_start(args, format);
     vsnprintf(logBuffer, sizeof(logBuffer), format, args);
     va_end(args);
-    sendLogHttp(logBuffer);  // Ta fonction d'envoi HTTP
+    // sendLogHttp(logBuffer);  // Ta fonction d'envoi HTTP
+    enqueueLog(String(logBuffer)); // ➕ Ajout à la file
 }

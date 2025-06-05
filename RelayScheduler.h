@@ -19,12 +19,13 @@ class RelayScheduler {
 public:
     RelayScheduler(const int* relayPins, int relayCount);
     void addRelay(uint8_t relayIndex, uint8_t hourOn, uint8_t minOn, uint8_t hourOff, uint8_t minOff);
-    void update();
+    void updateScheduler();
     void removeSchedule(int index);
     const std::vector<RelaySchedule>& getSchedules() const;
     void saveSchedules();
     void loadSchedules();
     void syncRelaysWithCurrentTime();
+    void processUpdate();
 
 private:
     const int* _relayPins;

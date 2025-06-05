@@ -3,8 +3,14 @@
 
 #include <WiFiClient.h>
 #include <PubSubClient.h>
+#include <queue>
 
 #define MQTT_TOPIC "jardin/relay16"
+
+struct Command {
+  String topic;
+  String message;
+};
 
 class MQTTManager {
 public:
@@ -13,16 +19,17 @@ public:
   void reconnect();
   bool connected();
   void loop();
-  // static MQTTManager* getInstance();    
   void publish(const char* topic, const char* payload);
   void subscribe(const char* topic);
+  void processQueue();
 
 private:
   const char* _server;
   uint16_t _port;
   WiFiClient _espClient;
   PubSubClient _client;
-  static MQTTManager* instance;                   
+  static MQTTManager* instance;   
+  std::queue<Command> commandQueue;                 
   void handleMessage(const String& topic, const String& message); 
   static void mqttCallback(char* topic, byte* payload, unsigned int length);
 };

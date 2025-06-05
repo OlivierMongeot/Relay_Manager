@@ -29,7 +29,7 @@ void WifiManager::begin() {
 
 void WifiManager::connectToWiFi(const char* ssid, const char* password) {
   int status = WL_IDLE_STATUS;
-  delay(700);
+  delay(100);
   Serial.print("\nConnexion WiFi ");
   Serial.print("\nStatut : ");
   Serial.println(getWifiStatus(status));

@@ -26,6 +26,7 @@ bool WebHandler::isAuthenticated(AsyncWebServerRequest *request) {
 }
 
 void WebHandler::handleRoot(AsyncWebServerRequest *request) {
+
   if (!isAuthenticated(request)) return;
 
   String html = HOME_PAGE_HEADER;
@@ -54,7 +55,6 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
           const relay = toggle.getAttribute('data-relay');
           const name = toggle.getAttribute('data-relay-name');
           const action = toggle.checked ? 'ON' : 'OFF';
-
           fetch(`/${action}${relay}`)
             .then(response => {
               if (response.ok) {
@@ -85,7 +85,6 @@ void WebHandler::handleRoot(AsyncWebServerRequest *request) {
 }
 
 void WebHandler::handleConfig(AsyncWebServerRequest *request) {
-
 
   if (!isAuthenticated(request)) return;
 
@@ -331,16 +330,16 @@ void WebHandler::setupRoutes() {
       digitalWrite(_relayPins[i - 1], LOW);
       
       request->send(200, "application/json", "{\"status\":\"OK\"}");
-      delay(50);
-      sendFormattedLog("Click Relais %d ON", i );
+     
+      // sendFormattedLog("Click Relais %d ON", i );
       });
 
       _server.on(("/OFF" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
       digitalWrite(_relayPins[i - 1], HIGH);
       
       request->send(200, "application/json", "{\"status\":\"OK\"}");
-      delay(50);
-      sendFormattedLog("Click Relais %d OFF ", i );
+    
+      // sendFormattedLog("Click Relais %d OFF ", i );
 
       });
   } 
