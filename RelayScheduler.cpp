@@ -2,7 +2,7 @@
 #include <time.h>
 #include "mqtt_manager.h"
 #include "log_http.h"
-
+#include "globals.h"
 
 RelayScheduler::RelayScheduler(const int* relayPins, int relayCount)
     : _relayPins(relayPins), _relayCount(relayCount) {}
@@ -38,12 +38,13 @@ void RelayScheduler::updateScheduler() {
     for (auto& s : _schedules) {
         int pin = _relayPins[s.relayIndex];
         if (hour == s.hourOn && minute == s.minOn && !s.isOn) {
-            digitalWrite(pin, LOW); // ON
+            // digitalWrite(pin, LOW); // ON
+            relayStateManager.set(pin, true);
             s.isOn = true;
             // sendFormattedLog("Scheduler : Relais %d ON", s.relayIndex + 1);
-          
         } else if (hour == s.hourOff && minute == s.minOff && s.isOn) {
-            digitalWrite(pin, HIGH); // OFF
+            // digitalWrite(pin, HIGH); // OFF
+            relayStateManager.set(pin, false);
             s.isOn = false;
             // sendFormattedLog("Scheduler : Relais %d OFF", s.relayIndex + 1);
         }
@@ -110,7 +111,7 @@ void RelayScheduler::loadSchedules() {
 
 void RelayScheduler::syncRelaysWithCurrentTime() {
 
-    sendLogHttp("Sync Relays WithCurrentTime");
+    sendFormattedLog("Synchronisation horaire des relays");
 
     time_t now = time(nullptr);
     struct tm timeinfo;
@@ -138,7 +139,9 @@ void RelayScheduler::syncRelaysWithCurrentTime() {
                     (hour < s.hourOff || (hour == s.hourOff && minute < s.minOff));
         }
 
-        digitalWrite(pin, shouldBeOn ? LOW : HIGH);
+        // digitalWrite(pin, shouldBeOn ? LOW : HIGH);
+        // setRelay(pin, shouldBeOn ? true : false);
+        relayStateManager.set(pin, shouldBeOn ? true : false);
         s.isOn = shouldBeOn;
 
         // sendFormattedLog("Relais %d %s à %02d:%02d\n", s.relayIndex + 1, shouldBeOn ? "restauré ON" : "restauré OFF", hour, minute);

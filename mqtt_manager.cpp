@@ -4,6 +4,7 @@
 #include <cstdio>   
 #include "log_http.h" 
 #include "esp_task_wdt.h"
+#include "globals.h"
 // Externe
 extern const int RELAY_PINS[16];
 
@@ -43,11 +44,10 @@ void MQTTManager::mqttCallback(char* topic, byte* payload, unsigned int length) 
 }
 
 void MQTTManager::handleMessage(const String& topic, const String& message) {
-  // Serial.print("MQTT -> Topic: ");
-  // Serial.println(topic);
+  Serial.print("MQTT -> Topic: ");
+  Serial.println(topic);
   Serial.print("Message: ");
   Serial.println(message);
-
 
   if (message == "TEST2") {
     for (int i = 0; i < 15; i+=2) {
@@ -67,13 +67,13 @@ void MQTTManager::handleMessage(const String& topic, const String& message) {
 
   for (int i = 0; i < 16; i++) {
     if (message == "ON" + String(i + 1)) {
-      digitalWrite(RELAY_PINS[i], LOW);
-      // sendFormattedLog("Command MQTT : Relais %d ON", i + 1 );
+      // digitalWrite(RELAY_PINS[i], LOW);
+      relayStateManager.set(i, true);
       return;
     }
     if (message == "OFF" + String(i + 1)) {
-      digitalWrite(RELAY_PINS[i], HIGH);
-      // sendFormattedLog("Command MQTT : Relais %d OFF", i + 1 );
+      // digitalWrite(RELAY_PINS[i], HIGH);
+      relayStateManager.set(i, false);
       return;
     }
   }
@@ -99,10 +99,8 @@ void MQTTManager::reconnect() {
       }
     }
   }
-
+  return;
 }
-
-
 
 
 bool MQTTManager::connected() {

@@ -2,6 +2,7 @@
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
 #include "mqtt_manager.h"
+#include "log_http.h"
 
 
 Preferences preferences;
@@ -48,7 +49,8 @@ void WifiManager::connectToWiFi(const char* ssid, const char* password) {
     }
   }
 
-  Serial.println("\nWiFi connecté !");
+  // Serial.println("\nWiFi connecté !");
+  sendFormattedLog("WiFi connecté !");
   Serial.print("Adresse IP : ");
   Serial.println(WiFi.localIP());
   WiFi.setAutoReconnect(true);

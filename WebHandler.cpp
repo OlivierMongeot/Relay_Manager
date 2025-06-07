@@ -5,6 +5,7 @@
 #include <set>  
 #include "mqtt_manager.h"
 #include "log_http.h"
+#include "globals.h"
 
 extern const char* HTTP_USERNAME;
 extern const char* HTTP_PASSWORD;
@@ -322,24 +323,28 @@ void WebHandler::setupRoutes() {
     handleAddSchedule(request);
   });
 
+ 
+
   
   _server.on("/relay-status", HTTP_GET, std::bind(&WebHandler::handleRelayStatus, this, std::placeholders::_1));
 
   for (int i = 1; i <= _relayCount; i++) {
       _server.on(("/ON" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
-      digitalWrite(_relayPins[i - 1], LOW);
-      
+      // digitalWrite(_relayPins[i - 1], LOW);
+      // setRelay(_relayPins[i - 1], true);
+      relayStateManager.set(i-1, true); // ou false
       request->send(200, "application/json", "{\"status\":\"OK\"}");
      
-      // sendFormattedLog("Click Relais %d ON", i );
+     
       });
 
       _server.on(("/OFF" + String(i)).c_str(), HTTP_GET, [this, i](AsyncWebServerRequest *request) {
-      digitalWrite(_relayPins[i - 1], HIGH);
+      // digitalWrite(_relayPins[i - 1], HIGH);
+      relayStateManager.set(i-1, false); // ou false
       
       request->send(200, "application/json", "{\"status\":\"OK\"}");
     
-      // sendFormattedLog("Click Relais %d OFF ", i );
+  
 
       });
   } 

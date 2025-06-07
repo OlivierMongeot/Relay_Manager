@@ -5,22 +5,47 @@
 const char* serverName = "http://192.168.0.145/post-esp-data.php";  
 String apiKeyValue = "tPmAT5Ab3j7F9";                              
 
-std::queue<String> logQueue;
 
-void enqueueLog(const String& message) {
-  if (logQueue.size() < 20) { // limite pour éviter les débordements mémoire
-    logQueue.push(message);
-  } else {
-    Serial.println("⚠️ File de logs pleine, log ignoré.");
+const int LOG_QUEUE_SIZE = 20;
+const int LOG_MSG_SIZE = 128;
+
+char logBuffer[LOG_QUEUE_SIZE][LOG_MSG_SIZE];
+int head = 0;
+int tail = 0;
+bool isFull = false;
+
+bool isLogQueueEmpty() {
+  return (!isFull && head == tail);
+}
+
+bool isLogQueueFull() {
+  return isFull;
+}
+
+void enqueueLog(const char* message) {
+  if (isLogQueueFull()) {
+    // Optionnel : tu peux garder une trace en Serial, ou compter les logs perdus
+    Serial.println(F("⚠️ File circulaire pleine, log ignoré."));
+    return;
+  }
+  // Copie sécurisée de la chaîne dans le buffer circulaire
+  strncpy(logBuffer[tail], message, LOG_MSG_SIZE - 1);
+  logBuffer[tail][LOG_MSG_SIZE - 1] = '\0'; // assure la terminaison
+  tail = (tail + 1) % LOG_QUEUE_SIZE;
+  if (tail == head) {
+    isFull = true;
   }
 }
 
 void processLogQueue() {
-  if (WiFi.status() == WL_CONNECTED && !logQueue.empty()) {
-    String msg = logQueue.front();
-    logQueue.pop();
-    sendLogHttp(msg.c_str());
-  }
+  if (WiFi.status() != WL_CONNECTED || isLogQueueEmpty()) return;
+
+  // Récupère le message à la tête
+  const char* message = logBuffer[head];
+  head = (head + 1) % LOG_QUEUE_SIZE;
+  isFull = false;
+
+  sendLogHttp(message);
 }
 
 
@@ -37,23 +62,15 @@ void sendLogHttp(const char* message) {
                       "&value=" + message;
 
     int httpResponseCode = http.POST(postData);
-    if (httpResponseCode > 0) {
-      Serial.printf("✅ Log envoyé: %d\n", httpResponseCode);
-    } else {
-      Serial.printf("❌ Erreur HTTP: %d\n", httpResponseCode);
-    }
     http.end();
-  } else {
-    Serial.println("⚠️ WiFi non connecté, log non envoyé.");
-  }
+  } 
 }
 
 void sendFormattedLog(const char* format, ...) {
-    char logBuffer[128];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(logBuffer, sizeof(logBuffer), format, args);
-    va_end(args);
-    // sendLogHttp(logBuffer);  // Ta fonction d'envoi HTTP
-    enqueueLog(String(logBuffer)); // ➕ Ajout à la file
+  char logBufferTmp[LOG_MSG_SIZE];
+  va_list args;
+  va_start(args, format);
+  vsnprintf(logBufferTmp, sizeof(logBufferTmp), format, args);
+  va_end(args);
+  enqueueLog(logBufferTmp);
 }
